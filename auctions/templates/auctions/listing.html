@@ -1,0 +1,55 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <div class="inside_listing">
+        <div id="image_div">
+            <img src="{{listing.photo_url}}" alt="">
+        </div>
+        <div id="information_div">
+            <h1>{{listing.title}}</h1>
+            <p>{{listing.description}}</p>
+            <p>Category: {{listing.category.category}}</p>
+            <p>Published on: {{listing.date}} by {{listing.owner}}</p>
+            
+            {% if user.is_authenticated %}
+            <form action="{% url 'listing' pk=listing.pk %}" method="post">
+                {% csrf_token %} 
+                <input type="submit" value ="{{is_in_watchlist}}">
+            </form>
+            {% endif %}
+            <br><br>
+            <h3>Current price: $ {{listing.price}}</h3>
+            <p>Number of bids: {{ bid_count }}</p>
+
+            {% if listing.active == True %}
+                {% if user.is_authenticated %}
+                    {% if user != listing.owner%}
+                        <form action="{% url 'bid' pk=listing.pk %}" method="post">
+                            {% csrf_token %} 
+                            <input type="number" name="bid_amount">
+                            <input type="submit" value="Make bid">
+                        </form>
+                    {% else %} 
+                        <form action="{% url 'close' pk=listing.pk %}" method="post">
+                            {% csrf_token %}
+                            <input type="submit" value="Close bid">
+                        </form>
+                    {% endif %}
+                {% else %} 
+                    <Span>You must be logged in to be able to bid</Span>
+                {% endif %}
+            {% else %}
+                <span>Listing closed</span>
+                {% block part %}
+                {% endblock %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
