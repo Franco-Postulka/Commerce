@@ -105,3 +105,11 @@ Span{
     background-color: rgb(90, 220, 90);
 }
 
+#comment_div{
+    display: flex;
+    flex-wrap: wrap;
+}
+#textarea_comment{
+    width: 800px;
+    margin-right: 10px;
+}

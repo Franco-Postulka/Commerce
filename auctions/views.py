@@ -194,14 +194,28 @@ def close(request, pk):
 
 def comment(request, pk):
     if request.method == "POST":
-        text = request.POST["text"]
-        text = text.strip()
-        listing = AuctionsListings.objects.get(pk=pk)
-        user = request.user
+        if request.user.is_authenticated:
+            listing = AuctionsListings.objects.get(pk=pk)
+            if not listing.active:
+                messages.error(request, 'This listing is no longer active')
+                return HttpResponseRedirect(reverse("listing", args=[pk]))
+            else:
+                text = request.POST["text"]
+                text = text.strip()
+                listing = AuctionsListings.objects.get(pk=pk)
+                user = request.user
 
-        comment = Comments(auction=listing,user=user,comment=text)
-        comment.save()
-        return HttpResponseRedirect(reverse("listing", args=[pk]))
+                comment = Comments(auction=listing,user=user,comment=text)
+                comment.save()
+                return HttpResponseRedirect(reverse("listing", args=[pk]))
+        else:
+            return HttpResponseRedirect(reverse("login"))
     else:
         # Si alguien intenta acceder a esta URL a través de GET, los redireccionamos al listado
         return HttpResponseRedirect(reverse("listing", args=[pk]))
+
+
+def watchlist(request):
+    listings_in_watchlist = request.user.watchlist.all()
+    print(listings_in_watchlist)
+    return render(request, 'auctions/watchlist.html',{'listings_in_watchlist':listings_in_watchlist})
