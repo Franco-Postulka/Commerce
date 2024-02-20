@@ -17,14 +17,12 @@
             <p>{{listing.description}}</p>
             <p>Category: {{listing.category.category}}</p>
             <p>Published on: {{listing.date}} by {{listing.owner}}</p>
-            
-            {% if user.is_authenticated %}
+            <br>
             <form action="{% url 'listing' pk=listing.pk %}" method="post">
                 {% csrf_token %} 
                 <input type="submit" value ="{{is_in_watchlist}}">
             </form>
-            {% endif %}
-            <br><br>
+            <br>
             <h3>Current price: $ {{listing.price}}</h3>
             <p>Number of bids: {{ bid_count }}</p>
 
@@ -46,10 +44,37 @@
                     <Span>You must be logged in to be able to bid</Span>
                 {% endif %}
             {% else %}
-                <span>Listing closed</span>
-                {% block part %}
-                {% endblock %}
+                {% if user != listing.owner %}
+                    {% if user.username != winner.username %}
+                        <span>Listing closed, the winner is {{winner.username}}</span>
+                    {% else %}
+                        <span>Congratulations! You are the winner of this listing</span>
+                    {% endif %}
+                {% else %} 
+                    <span>You have closed the Listing, the winner is {{winner.username}}</span>
+                {% endif %}
             {% endif %}
         </div>
+    </div>
+    <div id="comments">
+        <br>
+        <h2>Comments</h2>
+        {% if user.is_authenticated %}
+            <form action="{% url 'comment' pk=listing.pk %}" method="post">
+                {% csrf_token %} 
+                <textarea id="textarea_comment" name="text" placeholder="Add a comment..."></textarea>
+                <input type="submit" value="Comment">
+            </form>
+        {% endif %}
+        <br>
+        {% if comments != False%}
+            <ul>
+                {% for comment in comments %}
+                    <li>{{comment.user.username}}: {{comment.comment}}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No commets so far</p>
+        {% endif %}
     </div>
 {% endblock %}

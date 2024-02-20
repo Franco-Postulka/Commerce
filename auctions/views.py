@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.contrib import messages
 
 
-from .models import AuctionsListings, Bids, Category, User
+from .models import AuctionsListings, Bids, Category, Comments, User
 
 
 def index(request):
@@ -104,53 +104,74 @@ def listing(request, pk):
     bid_count = Bids.objects.filter(auction=listing).count()
 
     is_in_watchlist = listing.watchlist.filter(pk=request.user.pk).exists()
-
+    
     if request.method == "POST":
-        if is_in_watchlist == False:
-            listing.watchlist.add(listing.pk,request.user.pk)
-            messages.success(request, f'You have added "{listing.title}" to your watchlist.')
-            is_in_watchlist = True
+        if request.user.is_authenticated:
+            if is_in_watchlist == False:
+                print(f"Listing.pk:{listing.pk}, El user es {request.user.pk}")
+                listing.watchlist.add(request.user)
+                messages.success(request, f'You have added "{listing.title}" to your watchlist.')
+                is_in_watchlist = True
+            else:
+                listing.watchlist.remove(request.user)
+                messages.success(request, f'You have removed "{listing.title}" from your watchlist.')
+                is_in_watchlist = False
         else:
-            listing.watchlist.remove(listing.pk, request.user.pk)
-            messages.success(request, f'You have removed "{listing.title}" from your watchlist.')
-            is_in_watchlist = False
+            return HttpResponseRedirect(reverse('login'))
+
 
     if is_in_watchlist == False:
         is_in_watchlist = "Watch"
     else:
         is_in_watchlist = "Unwatch"
-    
-    return render(request, 'auctions/listing.html', {'listing':listing, 'is_in_watchlist': is_in_watchlist,
-                                                    'bid_count':bid_count})
 
+    comments = Comments.objects.filter(auction=listing)
+    if not comments.exists():
+        comments = False
+
+    if listing.active:
+        return render(request, 'auctions/listing.html', {'listing':listing, 'is_in_watchlist': is_in_watchlist,
+                                                        'bid_count':bid_count,'comments':comments})
+    else:
+        if listing.winner.exists():
+            winner = listing.winner.get()
+        else:
+            winner = None  # Establece a None si no hay ganador
+        return render(request, 'auctions/listing.html', {'listing':listing, 'is_in_watchlist': is_in_watchlist,
+                                                        'bid_count':bid_count, 'winner': winner, 'comments':comments})
+    
 def bid(request, pk):
     if request.method == "POST":
-        bid_amount = int(request.POST.get("bid_amount"))
-        listing=AuctionsListings.objects.get(pk=pk)
+        if request.user.is_authenticated:
+            bid_amount = int(request.POST.get("bid_amount"))
+            listing=AuctionsListings.objects.get(pk=pk)
 
-        current_price = listing.price
-        bid_instance = Bids(auction=listing, price=bid_amount, user=request.user)
-        
-        if listing.bid == None:
-            if bid_amount >= current_price:
-                listing.price = bid_amount
-                listing.bid = bid_amount
-                listing.save()
-                bid_instance.save() 
-                messages.success(request, f'Your bid of ${bid_amount} has been placed successfully.')
+            current_price = listing.price
+            bid_instance = Bids(auction=listing, price=bid_amount, user=request.user)
+            
+            if listing.bid == None:
+                if bid_amount >= current_price:
+                    listing.price = bid_amount
+                    listing.bid = bid_amount
+                    listing.save()
+                    bid_instance.save() 
+                    messages.success(request, f'Your bid of ${bid_amount} has been placed successfully.')
+                else:
+                    messages.error(request, 'Your bid must be greater than or equal to the current price.')
             else:
-                messages.error(request, 'Your bid must be greater than or equal to the current price.')
+                if bid_amount > current_price:
+                    listing.price = bid_amount
+                    listing.bid = bid_amount
+                    listing.save()
+                    bid_instance.save()
+                    messages.success(request, f'Your bid of ${bid_amount} has been placed successfully.')
+                else:
+                    messages.error(request, 'Your bid must be higher than the previous bids.')
+
+            return HttpResponseRedirect(reverse("listing", args=[pk]))
         else:
-            if bid_amount > current_price:
-                listing.price = bid_amount
-                listing.bid = bid_amount
-                listing.save()
-                bid_instance.save()
-                messages.success(request, f'Your bid of ${bid_amount} has been placed successfully.')
-            else:
-                messages.error(request, 'Your bid must be higher than the previous bids.')
-
-        return HttpResponseRedirect(reverse("listing", args=[pk]))
+            return HttpResponseRedirect(reverse('login'))
+        
     else:
         # Si alguien intenta acceder a esta URL a través de GET, los redireccionamos al listado
         return HttpResponseRedirect(reverse("listing", args=[pk]))
@@ -163,9 +184,24 @@ def close(request, pk):
         listing.save()
         if listing.bid != None:
             #Ver quien es el ganador
-            bid = Bids.objects.get(auction=listing)
-            if listing.bid == bid.price:
-                winner = User.objects.get(pk=bid.user.pk)
-    return render(request,"auctions/part.html",{"winner":winner})
-        #renderizar el nombre del ganador para todos los usuarios
-        #Renderizar que es el ganador al ganador 
+            bid = Bids.objects.get(auction=listing, price=listing.bid)
+            winner = User.objects.get(pk=bid.user.pk)
+            listing.winner.add(winner)
+        return HttpResponseRedirect(reverse("listing", args=[pk]))
+    else:
+        # Si alguien intenta acceder a esta URL a través de GET, los redireccionamos al listado
+        return HttpResponseRedirect(reverse("listing", args=[pk]))
+
+def comment(request, pk):
+    if request.method == "POST":
+        text = request.POST["text"]
+        text = text.strip()
+        listing = AuctionsListings.objects.get(pk=pk)
+        user = request.user
+
+        comment = Comments(auction=listing,user=user,comment=text)
+        comment.save()
+        return HttpResponseRedirect(reverse("listing", args=[pk]))
+    else:
+        # Si alguien intenta acceder a esta URL a través de GET, los redireccionamos al listado
+        return HttpResponseRedirect(reverse("listing", args=[pk]))
