@@ -10,7 +10,8 @@ from .models import AuctionsListings, Bids, Category, Comments, User
 
 
 def index(request):
-    listings=AuctionsListings.objects.all()
+    # listings=AuctionsListings.objects.all()
+    listings=AuctionsListings.objects.filter(active=True)
 
     return render(request, "auctions/index.html", {'listings':listings})
 
@@ -225,10 +226,32 @@ def categories(request):
     categories = Category.objects.all()
     return render(request,"auctions/categories.html",{'categories':categories})
 
+# def category(request,pk):
+#     category = Category.objects.get(pk=pk)
+#     listings = AuctionsListings.objects.filter(category=category)
+#     if not listings.exists():
+#         listings = False
+#     return render(request, "auctions/category.html", {'category':category,'listings':listings})
+    
 def category(request,pk):
     category = Category.objects.get(pk=pk)
     listings = AuctionsListings.objects.filter(category=category)
     if not listings.exists():
         listings = False
-    return render(request, "auctions/category.html", {'category':category,'listings':listings})
+        return render(request, "auctions/category.html", {'category':category,'listings':listings})
+    else:
+        active_listings = AuctionsListings.objects.filter(category=category, active=True)
+        inactive_listings = AuctionsListings.objects.filter(category=category, active=False)
+        if not active_listings.exists():
+            active_listings = False
+        if not inactive_listings.exists():
+            inactive_listings = False
+
+        return render(request, "auctions/category.html", {'category':category,'active_listings':active_listings,
+                                                        'inactive_listings':inactive_listings})
     
+
+def closed_listings(request):
+    listings=AuctionsListings.objects.filter(active=False)
+
+    return render(request, "auctions/closed.html", {'listings':listings})
