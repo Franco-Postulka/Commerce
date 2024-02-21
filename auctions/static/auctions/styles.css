@@ -113,3 +113,14 @@ Span{
     width: 800px;
     margin-right: 10px;
 }
+
+#categories{
+    margin: 20px;
+    /* background-color: aquamarine; */
+    text-align: center;
+}
+
+#category{
+    /* background-color: antiquewhite; */
+    margin: 10px;
+}

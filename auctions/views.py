@@ -219,3 +219,16 @@ def watchlist(request):
     listings_in_watchlist = request.user.watchlist.all()
     print(listings_in_watchlist)
     return render(request, 'auctions/watchlist.html',{'listings_in_watchlist':listings_in_watchlist})
+
+
+def categories(request):
+    categories = Category.objects.all()
+    return render(request,"auctions/categories.html",{'categories':categories})
+
+def category(request,pk):
+    category = Category.objects.get(pk=pk)
+    listings = AuctionsListings.objects.filter(category=category)
+    if not listings.exists():
+        listings = False
+    return render(request, "auctions/category.html", {'category':category,'listings':listings})
+    
