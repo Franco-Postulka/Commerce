@@ -94,6 +94,7 @@ def new(request):
             new_listing.category = category
 
         new_listing.save()
+        new_listing.watchlist.add(request.user)
 
         return HttpResponseRedirect(reverse("index"))
     categories = Category.objects.all()
@@ -156,6 +157,7 @@ def bid(request, pk):
                     listing.bid = bid_amount
                     listing.save()
                     bid_instance.save() 
+                    listing.watchlist.add(request.user)
                     messages.success(request, f'Your bid of ${bid_amount} has been placed successfully.')
                 else:
                     messages.error(request, 'Your bid must be greater than or equal to the current price.')
@@ -165,6 +167,7 @@ def bid(request, pk):
                     listing.bid = bid_amount
                     listing.save()
                     bid_instance.save()
+                    listing.watchlist.add(request.user)
                     messages.success(request, f'Your bid of ${bid_amount} has been placed successfully.')
                 else:
                     messages.error(request, 'Your bid must be higher than the previous bids.')
@@ -225,13 +228,6 @@ def watchlist(request):
 def categories(request):
     categories = Category.objects.all()
     return render(request,"auctions/categories.html",{'categories':categories})
-
-# def category(request,pk):
-#     category = Category.objects.get(pk=pk)
-#     listings = AuctionsListings.objects.filter(category=category)
-#     if not listings.exists():
-#         listings = False
-#     return render(request, "auctions/category.html", {'category':category,'listings':listings})
     
 def category(request,pk):
     category = Category.objects.get(pk=pk)

@@ -1,10 +1,25 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    {% if messages %}
+    <!-- {% if messages %}
     <ul class="messages">
         {% for message in messages %}
             <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %} -->
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                {% if message.tags == 'success' %}
+                    <div class="success-message">{{ message }}</div>
+                {% elif message.tags == 'error' %}
+                    <div class="error-message">{{ message }}</div>
+                {% else %}
+                    {{ message }}
+                {% endif %}
+            </li>
         {% endfor %}
     </ul>
     {% endif %}
@@ -35,10 +50,12 @@
                             <input type="submit" value="Make bid">
                         </form>
                     {% else %} 
-                        <form action="{% url 'close' pk=listing.pk %}" method="post">
-                            {% csrf_token %}
-                            <input type="submit" value="Close bid">
-                        </form>
+                        <div id="owner_buttons">
+                            <form action="{% url 'close' pk=listing.pk %}" method="post">
+                                {% csrf_token %}
+                                <input type="submit" value="Close bid">
+                            </form>
+                        </div>
                     {% endif %}
                 {% else %} 
                     <form action="{% url 'bid' pk=listing.pk %}" method="post">
@@ -48,14 +65,22 @@
                     </form>
                 {% endif %}
             {% else %}
-                {% if user != listing.owner %}
-                    {% if user.username != winner.username %}
-                        <span>Listing closed, the winner is {{winner.username}}</span>
-                    {% else %}
-                        <span>Congratulations! You are the winner of this listing</span>
+                {% if winner %}
+                    {% if user != listing.owner %}
+                        {% if user.username != winner.username %}
+                            <span>Listing closed, the winner is {{winner.username}}</span>
+                        {% else %}
+                            <span>Congratulations! You are the winner of this listing</span>
+                        {% endif %}
+                    {% else %} 
+                        <span>You have closed the Listing, the winner is {{winner.username}}</span>
                     {% endif %}
-                {% else %} 
-                    <span>You have closed the Listing, the winner is {{winner.username}}</span>
+                {% else %}
+                    {% if user != listing.owner %}
+                        <span>Listing closed, there were no bids</span>
+                    {% else %} 
+                        <span>You have closed the Listing, there were no bids</span>
+                    {% endif %}
                 {% endif %}
             {% endif %}
         </div>

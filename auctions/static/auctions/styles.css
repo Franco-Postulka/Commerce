@@ -100,9 +100,16 @@ Span{
     color: red;
 }
 
-.messages{
+/* .messages{
     text-decoration: none;
     background-color: rgb(90, 220, 90);
+} */
+
+.success-message{
+    background-color: rgb(90, 220, 90);
+}
+.error-message{
+    background-color: red;
 }
 
 #comment_div{
@@ -116,11 +123,21 @@ Span{
 
 #categories{
     margin: 20px;
-    /* background-color: aquamarine; */
     text-align: center;
 }
 
 #category{
-    /* background-color: antiquewhite; */
     margin: 10px;
+}
+#aclaration{
+    margin-left: 20px;
+}
+
+#owner_buttons{
+    display: flex;
+    flex-direction: row;
+    padding: 10px;
+}
+#owner_buttons input {
+    margin-right: 15px; /* Ajusta este valor según tu preferencia */
 }
