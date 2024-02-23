@@ -1,21 +1,14 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <!-- {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %} -->
     {% if messages %}
     <ul class="messages">
         {% for message in messages %}
             <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
                 {% if message.tags == 'success' %}
-                    <div class="success-message">{{ message }}</div>
+                    <div class="success-message"><strong>{{ message }}</strong></div>
                 {% elif message.tags == 'error' %}
-                    <div class="error-message">{{ message }}</div>
+                    <div class="error-message"><strong>{{ message }}</strong></div>
                 {% else %}
                     {{ message }}
                 {% endif %}
@@ -29,13 +22,13 @@
         </div>
         <div id="information_div">
             <h1>{{listing.title}}</h1>
-            <p>{{listing.description}}</p>
-            <p>Category: {{listing.category.category}}</p>
-            <p>Published on: {{listing.date}} by {{listing.owner}}</p>
+            <p><strong>Description:</strong> {{listing.description}}</p>
+            <p><strong>Category:</strong> {{listing.category.category}}</p>
+            <p><strong>Published on:</strong> {{listing.date}} by {{listing.owner}}</p>
             <br>
             <form action="{% url 'listing' pk=listing.pk %}" method="post">
                 {% csrf_token %} 
-                <input type="submit" value ="{{is_in_watchlist}}">
+                <input type="submit" class="average-submit" value ="{{is_in_watchlist}}">
             </form>
             <br>
             <h3>Current price: $ {{listing.price}}</h3>
@@ -47,13 +40,13 @@
                         <form action="{% url 'bid' pk=listing.pk %}" method="post">
                             {% csrf_token %} 
                             <input type="number" name="bid_amount">
-                            <input type="submit" value="Make bid">
+                            <input type="submit" class="average-submit" value="Make bid">
                         </form>
                     {% else %} 
                         <div id="owner_buttons">
                             <form action="{% url 'close' pk=listing.pk %}" method="post">
                                 {% csrf_token %}
-                                <input type="submit" value="Close bid">
+                                <input type="submit" class="average-submit" value="Close bid">
                             </form>
                         </div>
                     {% endif %}
@@ -61,7 +54,7 @@
                     <form action="{% url 'bid' pk=listing.pk %}" method="post">
                         {% csrf_token %} 
                         <input type="number" name="bid_amount">
-                        <input type="submit" value="Make bid">
+                        <input type="submit" class="average-submit" value="Make bid">
                     </form>
                 {% endif %}
             {% else %}
@@ -87,17 +80,22 @@
     </div>
     <div id="comments">
         <br>
-        <h2>Comments</h2>
+        <h1>Comments</h1>
         <form action="{% url 'comment' pk=listing.pk %}" method="post" id="comment_div">
             {% csrf_token %} 
             <textarea id="textarea_comment" name="text" placeholder="Add a comment..."></textarea>
-            <input type="submit" value="Comment">
+            <input type="submit"  class="average-submit" value="Comment">
         </form>
         <br>
         {% if comments != False%}
             <ul>
                 {% for comment in comments %}
-                    <li>{{comment.user.username}}: {{comment.comment}}</li>
+                    <li>
+                        <strong>{{comment.user.username}} {{comment.date}}</strong>
+                        <br>
+                        {{comment.comment}}
+                    </li>
+                    <br>
                 {% endfor %}
             </ul>
         {% else %}

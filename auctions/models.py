@@ -20,6 +20,7 @@ class AuctionsListings(models.Model):
     # Optionals
     photo_url = models.URLField(blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+    
     watchlist = models.ManyToManyField(User,blank=True, related_name='watchlist')
     winner = models.ManyToManyField(User,blank=True,related_name="winer")
 
@@ -32,5 +33,6 @@ class Comments(models.Model):
     auction = models.ForeignKey(AuctionsListings,on_delete=models.CASCADE,  null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     comment = models.CharField(max_length=200, null=True) 
+    date = models.DateTimeField(default=timezone.now())
 
 

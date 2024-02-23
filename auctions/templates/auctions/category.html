@@ -21,9 +21,6 @@
         <br>
         <h3 id="aclaration">Closed listings</h3>
             <div id="listing_section">
-                <div>
-                </div>
-                <br>
                 {% for listing in inactive_listings %}
                         <div>
                             <a href="{% url 'listing' pk=listing.pk %}" class="listing">
