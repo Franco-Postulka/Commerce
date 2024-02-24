@@ -79,9 +79,9 @@ def new(request):
         if image == "":
             image= "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/495px-No-Image-Placeholder.svg.png?20200912122019"
         
-        # Crear una nueva instancia de AuctionsListings
+        # new instance of AuctionsListings
         new_listing = AuctionsListings(
-            owner=request.user,  # Asígnalo al usuario actual
+            owner=request.user,  
             title=title,
             description=description,
             price=price,
@@ -89,7 +89,6 @@ def new(request):
         )
 
         if category_id:
-            # Convertir el ID de la categoría a una instancia de Category
             category = Category.objects.get(pk=category_id)
             new_listing.category = category
 
@@ -138,7 +137,7 @@ def listing(request, pk):
         if listing.winner.exists():
             winner = listing.winner.get()
         else:
-            winner = None  # Establece a None si no hay ganador
+            winner = None  
         return render(request, 'auctions/listing.html', {'listing':listing, 'is_in_watchlist': is_in_watchlist,
                                                         'bid_count':bid_count, 'winner': winner, 'comments':comments})
     
@@ -151,8 +150,8 @@ def bid(request, pk):
             current_price = listing.price
             bid_instance = Bids(auction=listing, price=bid_amount, user=request.user)
             
-            if listing.bid == None:
-                if bid_amount >= current_price:
+            if listing.bid == None: # if there are still no bids 
+                if bid_amount >= current_price: #
                     listing.price = bid_amount
                     listing.bid = bid_amount
                     listing.save()
@@ -175,25 +174,23 @@ def bid(request, pk):
             return HttpResponseRedirect(reverse("listing", args=[pk]))
         else:
             return HttpResponseRedirect(reverse('login'))
-        
     else:
-        # Si alguien intenta acceder a esta URL a través de GET, los redireccionamos al listado
         return HttpResponseRedirect(reverse("listing", args=[pk]))
     
 def close(request, pk):
     if request.method =="POST":
-        #Verificar si hubieron bids
+        #Verify if there have been bids 
         listing = AuctionsListings.objects.get(pk=pk)
         listing.active = False
         listing.save()
-        if listing.bid != None:
-            #Ver quien es el ganador
-            bid = Bids.objects.get(auction=listing, price=listing.bid)
+        if listing.bid != None: # if there were bids
+            #the auctions has the price of the highest bid, so de bid thar has the same price and corresponds to that listing is the winner
+            bid = Bids.objects.get(auction=listing, price=listing.bid) 
             winner = User.objects.get(pk=bid.user.pk)
             listing.winner.add(winner)
         return HttpResponseRedirect(reverse("listing", args=[pk]))
     else:
-        # Si alguien intenta acceder a esta URL a través de GET, los redireccionamos al listado
+        # If someone tries to access this URL via GET, we redirect them to the listing
         return HttpResponseRedirect(reverse("listing", args=[pk]))
 
 def comment(request, pk):
@@ -215,7 +212,6 @@ def comment(request, pk):
         else:
             return HttpResponseRedirect(reverse("login"))
     else:
-        # Si alguien intenta acceder a esta URL a través de GET, los redireccionamos al listado
         return HttpResponseRedirect(reverse("listing", args=[pk]))
 
 
