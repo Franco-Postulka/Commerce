@@ -48,6 +48,9 @@ a:hover {
     text-decoration: underline; 
     color: black; 
 }
+/* .nav-link{
+    font-size:20px;
+} */
 
 .listing{
     padding: 5px;
